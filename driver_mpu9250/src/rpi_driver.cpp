@@ -3,6 +3,7 @@
 #include <pigpiod_if2.h>
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 void interrupt_callback(int pi, unsigned int user_gpio, unsigned int level, unsigned int tick, void* userdata)
 {
@@ -41,6 +42,7 @@ void rpi_driver::initialize_i2c(unsigned int i2c_bus, unsigned int i2c_address, 
 
     // Set up the interrupt pin.
     result = set_mode(rpi_driver::m_pigpio_handle, interrupt_gpio_pin, PI_INPUT);
+    // result = set_mode(rpi_driver::m_pigpio_handle, interrupt_gpio_pin, PI_OUTPUT); //for debug    
     if(result < 0)
     {
         switch(result)

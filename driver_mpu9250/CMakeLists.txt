@@ -3,6 +3,7 @@ project(driver_mpu9250)
 
 # Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
+add_definitions(-std=c++11)
 
 # Find catkin and package dependencies
 find_package(catkin REQUIRED COMPONENTS

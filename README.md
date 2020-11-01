@@ -1,5 +1,19 @@
 # driver_mpu9250
 
+## 更新
+
+* buildに失敗するので、
+  #include <atomic>の付加と、isnan関数の前に std::とクラスを付加。
+  でbuildが通るようになった。
+        
+* launchファイルを追加
+
+* pigpioテストを追加
+
+* pigpiodを立ち上げ、接続はできるが、その後Gpioをset modeしようとすると permission errorで落ちるので
+　使えない。
+
+
 ## Overview
 
 This package includes driver software for the InvenSense [MPU9250] 9DoF IMU.

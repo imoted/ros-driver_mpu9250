@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "ros_node.h"
 
 #include <stdexcept>
 #include <sstream>
@@ -31,7 +32,7 @@ void driver::initialize(unsigned int i2c_bus, unsigned int i2c_address, unsigned
     // Test MPU9250 communications.
     try
     {
-        if(read_mpu9250_register(register_mpu9250_type::WHO_AM_I) != 0x71)
+        if(read_mpu9250_register(register_mpu9250_type::WHO_AM_I) != 0x68) // MPU9250 0x71
         {
             throw std::runtime_error("MPU9250 device ID mismatch.");
         }
@@ -52,7 +53,7 @@ void driver::initialize(unsigned int i2c_bus, unsigned int i2c_address, unsigned
     write_mpu9250_register(register_mpu9250_type::PWR_MGMT_1, 0x01);
 
     // Set interrupt pin to latch, and enable I2C bypass mode for access to AK8963.
-    write_mpu9250_register(driver::register_mpu9250_type::INT_BYP_CFG, 0x22);
+    write_mpu9250_register(driver::register_mpu9250_type::INT_BYP_CFG, 0x22);  // original 0x22
     // Enable interrupt pin for raw data ready.
     write_mpu9250_register(driver::register_mpu9250_type::INT_ENABLE, 0x01);
 
@@ -64,22 +65,22 @@ void driver::initialize(unsigned int i2c_bus, unsigned int i2c_address, unsigned
     driver::m_accel_fsr = 2.0f;
 
     // Test AK8963 communications.
-    try
-    {
-        if(read_ak8963_register(register_ak8963_type::WHO_AM_I) != 0x48)
-        {
-            throw std::runtime_error("AK8963 device ID mismatch.");
-        }
-    }
-    catch (std::exception& e)
-    {
-        std::stringstream message;
-        message << "AK8963 communications failure: " << e.what();
-        throw std::runtime_error(message.str());
-    }
+    // try
+    // {
+    //     if(read_ak8963_register(register_ak8963_type::WHO_AM_I) != 0x48)
+    //     {
+    //         throw std::runtime_error("AK8963 device ID mismatch.");
+    //     }
+    // }
+    // catch (std::exception& e)
+    // {
+    //     std::stringstream message;
+    //     message << "AK8963 communications failure: " << e.what();
+    //     throw std::runtime_error(message.str());
+    // }
 
-    // Power on magnetometer at 16bit resolution with 100Hz sample rate.
-    write_ak8963_register(register_ak8963_type::CONTROL_1, 0x16);
+    // // Power on magnetometer at 16bit resolution with 100Hz sample rate.
+    // write_ak8963_register(register_ak8963_type::CONTROL_1, 0x16);
 }
 void driver::deinitialize()
 {
@@ -325,45 +326,45 @@ void driver::read_data()
     data.gyro_y = driver::m_gyro_fsr * static_cast<float>(static_cast<short>(be16toh(*reinterpret_cast<unsigned short*>(&atg_buffer[10])))) / 32768.0f;
     data.gyro_z = driver::m_gyro_fsr * static_cast<float>(static_cast<short>(be16toh(*reinterpret_cast<unsigned short*>(&atg_buffer[12])))) / 32768.0f;
 
-    // Burst read magnetometer data.
-    char magneto_buffer[7];
-    try
-    {
-        read_ak8963_registers(driver::register_ak8963_type::X_LOW, 7, magneto_buffer);
-    }
-    catch(const std::exception& e)
-    {
-        // Quit before callback. Do not report error in loop.
-        return;
-    }
-    // Check if there was a magnetic overflow.
-    if(magneto_buffer[6] & 0x08)
-    {
-        // Magnetic overflow occured and data is invalid.
-        data.magneto_x = std::numeric_limits<float>::quiet_NaN();
-        data.magneto_y = std::numeric_limits<float>::quiet_NaN();
-        data.magneto_z = std::numeric_limits<float>::quiet_NaN();
-    }
-    else
-    {
-        // Get the measurement resolution.
-        float resolution;
-        if(magneto_buffer[6] & 0x10)
-        {
-            // 16 bit signed integer
-            resolution = 32768.0f;
-        }
-        else
-        {
-            // 14 bit signed integer
-            resolution = 17778.0f;
-        }
+    // // Burst read magnetometer data.
+    // char magneto_buffer[7];
+    // try
+    // {
+    //     read_ak8963_registers(driver::register_ak8963_type::X_LOW, 7, magneto_buffer);
+    // }
+    // catch(const std::exception& e)
+    // {
+    //     // Quit before callback. Do not report error in loop.
+    //     return;
+    // }
+    // // Check if there was a magnetic overflow.
+    // if(magneto_buffer[6] & 0x08)
+    // {
+    //     // Magnetic overflow occured and data is invalid.
+    //     data.magneto_x = std::numeric_limits<float>::quiet_NaN();
+    //     data.magneto_y = std::numeric_limits<float>::quiet_NaN();
+    //     data.magneto_z = std::numeric_limits<float>::quiet_NaN();
+    // }
+    // else
+    // {
+    //     // Get the measurement resolution.
+    //     float resolution;
+    //     if(magneto_buffer[6] & 0x10)
+    //     {
+    //         // 16 bit signed integer
+    //         resolution = 32768.0f;
+    //     }
+    //     else
+    //     {
+    //         // 14 bit signed integer
+    //         resolution = 17778.0f;
+    //     }
 
-        // Store measurements.
-        data.magneto_x = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[0])))) / resolution;
-        data.magneto_y = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[2])))) / resolution;
-        data.magneto_z = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[4])))) / resolution;
-    }
+    //     // Store measurements.
+    //     data.magneto_x = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[0])))) / resolution;
+    //     data.magneto_y = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[2])))) / resolution;
+    //     data.magneto_z = 4900.0f * static_cast<float>(static_cast<short>(le16toh(*reinterpret_cast<unsigned short*>(&magneto_buffer[4])))) / resolution;
+    // }
 
     // Read interrupt status register to clear interrupt.
     try
@@ -375,6 +376,7 @@ void driver::read_data()
         // Quit before callback. Do not report error in loop.
         return;
     }
+
 
     // Initiate the data callback.
     driver::m_data_callback(data);

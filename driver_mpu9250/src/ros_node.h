@@ -28,6 +28,8 @@ public:
     void spin();
 
 private:
+    std::string param_frame;
+
     // COMPONENTS
     /// \brief m_driver The driver instance.
     driver* m_driver;
@@ -63,6 +65,8 @@ private:
     ros::Publisher m_publisher_magnetometer;
     /// \brief Publisher for temperature data.
     ros::Publisher m_publisher_temperature;
+
+    ros::Publisher m_publisher_imu;
 
     // SERVICES
     /// \brief Service server for calibrating the gyroscope.

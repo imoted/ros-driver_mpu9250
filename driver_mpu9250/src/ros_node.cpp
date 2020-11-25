@@ -4,6 +4,8 @@
 #include <sensor_msgs_ext/angular_velocity.h>
 #include <sensor_msgs_ext/magnetic_field.h>
 #include <sensor_msgs_ext/temperature.h>
+#include "sensor_msgs/Imu.h"
+
 
 #include <cmath>
 
@@ -32,6 +34,9 @@ ros_node::ros_node(driver *driver, int argc, char **argv)
     int param_gyro_fsr = private_node.param<int>("gyro_fsr", 0);
     int param_accel_fsr = private_node.param<int>("accel_fsr", 0);
     float param_max_data_rate = private_node.param<float>("max_data_rate", 8000.0F);
+    ros_node::param_frame = private_node.param<std::string>("frame", "base_link");
+
+    // ROS_INFO_STREAM("param_interrupt_pin is : " << param_interrupt_pin );
 
     // Read calibrations.
     ros_node::m_calibration_accelerometer.load(private_node, "calibration_accelerometer");
@@ -40,8 +45,10 @@ ros_node::ros_node(driver *driver, int argc, char **argv)
     // Set up publishers.
     ros_node::m_publisher_accelerometer = ros_node::m_node->advertise<sensor_msgs_ext::acceleration>("imu/accelerometer", 1);
     ros_node::m_publisher_gyroscope = ros_node::m_node->advertise<sensor_msgs_ext::angular_velocity>("imu/gyroscope", 1);
-    ros_node::m_publisher_magnetometer = ros_node::m_node->advertise<sensor_msgs_ext::magnetic_field>("imu/magnetometer", 1);
+    // ros_node::m_publisher_magnetometer = ros_node::m_node->advertise<sensor_msgs_ext::magnetic_field>("imu/magnetometer", 1);
     ros_node::m_publisher_temperature = ros_node::m_node->advertise<sensor_msgs_ext::temperature>("imu/temperature", 1);
+
+    ros_node::m_publisher_imu = ros_node::m_node->advertise<sensor_msgs::Imu >("imu", 1);
 
     // Initialize the driver and set parameters.
     try
@@ -195,20 +202,33 @@ void ros_node::data_callback(driver::data data)
     // Publish message.
     ros_node::m_publisher_gyroscope.publish(message_gyro);
 
-    // Check if there was a magneto overflow.
-    if(std::isnan(data.magneto_x) == false)
-    {
-        // Create magneto message.
-        sensor_msgs_ext::magnetic_field message_mag;
-        // Fill magnetic field strengths (convert from uT to T)
-        message_mag.x = static_cast<double>(data.magneto_x) * 0.000001;
-        message_mag.y = static_cast<double>(data.magneto_y) * 0.000001;
-        message_mag.z = static_cast<double>(data.magneto_z) * 0.000001;
-        // Apply calibration.
-        ros_node::m_calibration_magnetometer.calibrate(message_mag.x, message_mag.y, message_mag.z);
-        // Publish message.
-        ros_node::m_publisher_magnetometer.publish(message_mag);
-    }
+    sensor_msgs::Imu imu_msg;
+    imu_msg.header.frame_id= ros_node::param_frame;
+    imu_msg.header.stamp=ros::Time::now();
+
+    imu_msg.linear_acceleration.x = message_accel.x;
+    imu_msg.linear_acceleration.y = message_accel.y;
+    imu_msg.linear_acceleration.z = message_accel.z;
+    imu_msg.angular_velocity.x = message_gyro.x;
+    imu_msg.angular_velocity.y = message_gyro.y;
+    imu_msg.angular_velocity.z = message_gyro.z;
+
+    ros_node::m_publisher_imu.publish(imu_msg);
+
+    // // Check if there was a magneto overflow.
+    // if(std::isnan(data.magneto_x) == false)
+    // {
+    //     // Create magneto message.
+    //     sensor_msgs_ext::magnetic_field message_mag;
+    //     // Fill magnetic field strengths (convert from uT to T)
+    //     message_mag.x = static_cast<double>(data.magneto_x) * 0.000001;
+    //     message_mag.y = static_cast<double>(data.magneto_y) * 0.000001;
+    //     message_mag.z = static_cast<double>(data.magneto_z) * 0.000001;
+    //     // Apply calibration.
+    //     ros_node::m_calibration_magnetometer.calibrate(message_mag.x, message_mag.y, message_mag.z);
+    //     // Publish message.
+    //     ros_node::m_publisher_magnetometer.publish(message_mag);
+    // }
 
     // Create temperature message.
     sensor_msgs_ext::temperature message_temp;

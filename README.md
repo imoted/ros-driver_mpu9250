@@ -7,9 +7,9 @@
 * launchファイルを追加
 * gpioptestを追加
 * 6axis のmpu6050用に brachを追加
- * IDの変更
- * magnetometer部分をコメントアウト
- * ROSのsensor_msgs/imuで出力できるようにコード追加
+  * IDの変更
+  * magnetometer部分をコメントアウト
+  * ROSのsensor_msgs/imuで出力できるようにコード追加
 
 ## Overview
 

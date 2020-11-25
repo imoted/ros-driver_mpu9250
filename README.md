@@ -1,4 +1,4 @@
-# driver_mpu9250
+# driver_mpu6050
 
 ## 更新
 
@@ -6,6 +6,10 @@
   #include <atomic>の付加と、isnan関数の前に std::とクラスを付加。
 * launchファイルを追加
 * gpioptestを追加
+* 6axis のmpu6050用に brachを追加
+ * IDの変更
+ * magnetometer部分をコメントアウト
+ * ROSのsensor_msgs/imuで出力できるようにコード追加
 
 ## Overview
 

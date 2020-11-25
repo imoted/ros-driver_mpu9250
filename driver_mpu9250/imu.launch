@@ -1,21 +1,30 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="arg_i2c_bus" default="1"/>
+    <arg name="arg_i2c_address" default="0x68"/>
+    <arg name="arg_interrupt_gpio_pin"  default="14"/>
+    <arg name="arg_gyro_dlpf_frequency" default="2"/>
+    <arg name="arg_accel_dlpf_frequency" default="2"/>
+    <arg name="arg_gyro_fsr" default="0"/>
+    <arg name="arg_accel_fsr" default="0"/>
+    <arg name="arg_max_data_rate" default="100"/>
+
     <node pkg="driver_mpu9250" type="driver_mpu9250_rpi" name="driver_mpu9250" output="screen">
-        <param name="i2c_bus" value="1"/>
-        <param name="i2c_address" value="0x68"/>
+        <param name="i2c_bus" value="$(arg arg_i2c_bus)" />
+        <param name="i2c_address" value="$(arg arg_i2c_address)" />
         <!-- raspberrypi RX is GPI14 -->
-        <param name="interrupt_gpio_pin" value="14"/>
+        <param name="interrupt_gpio_pin" value="$(arg arg_interrupt_gpio_pin)" />
         <!-- 92Hz -->
-        <param name="gyro_dlpf_frequency" value="2"/>
+        <param name="gyro_dlpf_frequency" value="$(arg arg_gyro_dlpf_frequency)"/>
         <!-- 92Hz -->
-        <param name="accel_dlpf_frequency" value="2"/>
+        <param name="accel_dlpf_frequency" value="$(arg arg_accel_dlpf_frequency)"/>
         <!-- +/- 250deg/sec -->
-        <param name="gyro_fsr" value="0"/>
+        <param name="gyro_fsr" value="$(arg arg_gyro_fsr)"/>
         <!-- +/- 2g -->
-        <param name="accel_fsr" value="0"/>
+        <param name="accel_fsr" value="$(arg arg_accel_fsr)"/>
         <!--   The maximum allowable sensor data rate, in Hz. 
         Data rate is normally calculated as half of the accel/gyro DLPF frequency (nyquist criterion). 
         This parameter allows maximum cap on the data rate, regardless of the DLPF frequency. -->
-        <param name="max_data_rate" value="100"/>
+        <param name="max_data_rate" value="$(arg arg_max_data_rate)"/>
     </node>
 </launch>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="driver_mpu9250" type="driver_mpu9250_rpi" name="driver_mpu9250" output="screen">
+        <param name="i2c_bus" value="1"/>
+        <param name="i2c_address" value="0x68"/>
+        <!-- raspberrypi RX is GPI14 -->
+        <param name="interrupt_gpio_pin" value="14"/>
+        <!-- 92Hz -->
+        <param name="gyro_dlpf_frequency" value="2"/>
+        <!-- 92Hz -->
+        <param name="accel_dlpf_frequency" value="2"/>
+        <!-- +/- 250deg/sec -->
+        <param name="gyro_fsr" value="0"/>
+        <!-- +/- 2g -->
+        <param name="accel_fsr" value="0"/>
+        <!--   The maximum allowable sensor data rate, in Hz. 
+        Data rate is normally calculated as half of the accel/gyro DLPF frequency (nyquist criterion). 
+        This parameter allows maximum cap on the data rate, regardless of the DLPF frequency. -->
+        <param name="max_data_rate" value="100"/>
+    </node>
+</launch>

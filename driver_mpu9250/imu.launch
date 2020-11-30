@@ -27,4 +27,6 @@
         This parameter allows maximum cap on the data rate, regardless of the DLPF frequency. -->
         <param name="max_data_rate" value="$(arg arg_max_data_rate)"/>
     </node>
+
+  <node pkg="rosservice" type="rosservice" name="calibration_service_call" args="call /imu/calibrate_gyroscope 1000"/>
 </launch>
